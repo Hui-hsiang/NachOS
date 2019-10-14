@@ -28,7 +28,7 @@ class sleepList {
 	public:
 		sleepList(): current_interrupt(0) {};
 		void PutToSleep(Thread *t, int x);  // put the thread into sleep queue
-		bool PutToReady();    // if there have thread need to wake up
+		bool Wake();    // if there have thread need to wake up
 		bool Empty();  // if there is no thread in sleepList
 	private:
 		class sleepThread {

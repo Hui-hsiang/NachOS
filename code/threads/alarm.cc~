@@ -50,7 +50,7 @@ void Alarm::CallBack()
 {
     Interrupt *interrupt = kernel->interrupt;
     MachineStatus status = interrupt->getStatus();
-    bool woken = SleepList.PutToReady();    
+    bool woken = SleepList.Wake();    
 	// if no program need to count, close the clock
     if (status == IdleMode && !woken && SleepList.Empty()) {	// is it time to quit?
         if (!interrupt->AnyFutureInterrupts()) {
@@ -84,7 +84,7 @@ void sleepList::PutToSleep(Thread* t, int x)
 	t->Sleep(false);
 }
 
-bool sleepList::PutToReady()
+bool sleepList::Wake()
 {
 	bool woken = false;
 	current_interrupt++;
@@ -93,7 +93,7 @@ bool sleepList::PutToReady()
 		if(current_interrupt >= it->when)
 		{
 			woken = true;
-			cout << "sleepList::PutToReady Thread woken" << endl;
+			cout << "sleepList::Wake Thread woken" << endl;
 			// put thread into ready queue after process waken
 			kernel->scheduler->ReadyToRun(it->sleeper); 
 			it = threadlist.erase(it);
