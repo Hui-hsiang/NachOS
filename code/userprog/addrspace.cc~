@@ -74,11 +74,6 @@ AddrSpace::AddrSpace()
 // 	Dealloate an address space.
 //----------------------------------------------------------------------
 
-#define PAGE_OCCU true
-#define PAGE_FREE false
-bool AddrSpace::PhyPageStatus[NumPhysPages] = {PAGE_FREE};
-int AddrSpace::NumFreePage = NumPhysPages;
-
 AddrSpace::~AddrSpace()
 {
     // release the physical pages occupied by this program
@@ -99,6 +94,11 @@ AddrSpace::~AddrSpace()
 //
 //	"fileName" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
+
+#define PAGE_OCCU true
+#define PAGE_FREE false
+bool AddrSpace::PhyPageStatus[NumPhysPages] = {PAGE_FREE};
+int AddrSpace::NumFreePage = NumPhysPages;
 
 bool 
 AddrSpace::Load(char *fileName) 

@@ -104,7 +104,7 @@ class Thread {
     void CheckOverflow();   	// Check if thread stack has overflowed
     void setStatus(ThreadStatus st) { status = st; }
 
-// scheduler
+	// schedulor
     void setStartTime(int t)    {startTime = t;}
     int getStartTime()		{return startTime;}
     void setBurstTime(int t)	{burstTime = t;}

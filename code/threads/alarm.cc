@@ -50,14 +50,21 @@ void Alarm::CallBack()
 {
     Interrupt *interrupt = kernel->interrupt;
     MachineStatus status = interrupt->getStatus();
-    bool woken = SleepList.PutToReady();    
-	// if no program need to count, close the clock
+    bool woken = SleepList.PutToReady(); 
+
+    kernel->currentThread->setPriority(kernel->currentThread->getPriority() - 1);
+
     if (status == IdleMode && !woken && SleepList.Empty()) {	// is it time to quit?
         if (!interrupt->AnyFutureInterrupts()) {
 	    timer->Disable();	// turn off the timer
 	}
     } else {			// there's someone to preempt
-	interrupt->YieldOnReturn();
+	if(kernel->scheduler->getSchedulerType() == RR ||
+            kernel->scheduler->getSchedulerType() == Priority ||
+		kernel->scheduler->getSchedulerType() == SRTF) {
+		cout << "========interrupt========" << endl;
+		interrupt->YieldOnReturn();
+	}
     }
 }
 
@@ -66,6 +73,11 @@ void Alarm::WaitUntil(int x)
 	// close interrupt
 	IntStatus oldLevel = kernel->interrupt->SetLevel(IntOff);
 	Thread* t = kernel->currentThread;
+
+	// burst time
+	int worktime = kernel->stats->userTicks - t->getStartTime();
+	t->setBurstTime(t->getBurstTime() + worktime);
+	t->setStartTime(kernel->stats->userTicks);
 	cout << "Alarm::WaitUntil go sleep" << endl;
 	SleepList.PutToSleep(t, x);
 	// open interrupt
