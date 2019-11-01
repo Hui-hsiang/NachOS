@@ -38,6 +38,7 @@ int SJFCompare(Thread *a, Thread *b)
 }
 int SRTFCompare(Thread *a, Thread *b)
 {
+	//if(
 	if(a->getBurstTime() == b->getBurstTime())
 		return 0;
 	return a->getBurstTime() > b->getBurstTime() ? 1 : -1;

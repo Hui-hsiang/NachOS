@@ -413,13 +413,17 @@ static void
 SimpleThread()
 {
     Thread *thread = kernel->currentThread;
+    thread->setStartTime(thread->getStartTime() - 1);
+    if(thread->getStartTime()==0)
+{
     while (thread->getBurstTime() > 0) {
         thread->setBurstTime(thread->getBurstTime() - 1);
         //kernel->currentThread->Yield();
 	kernel->interrupt->OneTick();
 	printf("%s: start %d, remain %d\n", kernel->currentThread->getName(),
 			kernel->currentThread->getStartTime(), kernel->currentThread->getBurstTime());
-    }   
+    } 
+}   
 }
 
 //----------------------------------------------------------------------
