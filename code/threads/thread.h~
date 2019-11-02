@@ -103,9 +103,8 @@ class Thread {
     
     void CheckOverflow();   	// Check if thread stack has overflowed
     void setStatus(ThreadStatus st) { status = st; }
-
-	// schedulor
-    void setStartTime(int t)    {startTime = t;}
+// scheduler
+    void setStartTime(int t)	{startTime = t;}
     int getStartTime()		{return startTime;}
     void setBurstTime(int t)	{burstTime = t;}
     int getBurstTime()		{return burstTime;}
@@ -126,7 +125,7 @@ class Thread {
     char* name;
     int startTime;
     int burstTime;
-    int priority;	
+    int priority;
     void StackAllocate(VoidFunctionPtr func, void *arg);
     				// Allocate a stack for thread.
 				// Used internally by Fork()

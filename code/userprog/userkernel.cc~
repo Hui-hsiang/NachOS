@@ -30,10 +30,10 @@ UserProgKernel::UserProgKernel(int argc, char **argv)
 		execfile[++execfileNum]= argv[++i];
 	}
 	else if (strcmp(argv[i], "-burst") == 0) {
-		burstTime[execfileNum]= atoi(argv[++i]);
+		burstTime[++execfileNum]= atoi(argv[++i]);
 	}
 	else if (strcmp(argv[i], "-prio") == 0) {
-		priority[execfileNum]= atoi(argv[++i]);
+		priority[++execfileNum]= atoi(argv[++i]);
 	}
     	else if (strcmp(argv[i], "-u") == 0) {
 		cout << "===========The following argument is defined in userkernel.cc" << endl;

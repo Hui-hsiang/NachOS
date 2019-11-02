@@ -48,11 +48,11 @@ class Alarm : public CallBackObj {
 				// to "toCall" every time slice.
     ~Alarm() { delete timer; }
     
+    sleepList SleepList;
     void WaitUntil(int x);	// suspend execution until time > now + x
 
   private:
     Timer *timer;		// the hardware timer device
-    sleepList SleepList;
     void CallBack();		// called when the hardware
 				// timer generates an interrupt
 };

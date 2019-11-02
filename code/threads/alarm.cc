@@ -59,10 +59,8 @@ void Alarm::CallBack()
 	    timer->Disable();	// turn off the timer
 	}
     } else {			// there's someone to preempt
-	if(kernel->scheduler->getSchedulerType() == RR ||
-            kernel->scheduler->getSchedulerType() == Priority ||
-		kernel->scheduler->getSchedulerType() == SRTF) {
-		cout << "========interrupt========" << endl;
+	if(kernel->scheduler->getSchedulerType() == RR || kernel->scheduler->getSchedulerType() == SRTF)
+	{
 		interrupt->YieldOnReturn();
 	}
     }
@@ -80,6 +78,7 @@ void Alarm::WaitUntil(int x)
 	t->setStartTime(kernel->stats->userTicks);
 	cout << "Alarm::WaitUntil go sleep" << endl;
 	SleepList.PutToSleep(t, x);
+
 	// open interrupt
 	kernel->interrupt->SetLevel(oldLevel);
 }
@@ -91,13 +90,20 @@ bool sleepList::Empty()	// Confirm that there is no program in the list
 
 void sleepList::PutToSleep(Thread* t, int x)
 {
+	IntStatus oldLevel = kernel->interrupt->SetLevel(IntOff);
+
 	ASSERT(kernel->interrupt->getLevel() == IntOff);
 	threadlist.push_back(sleepThread(t, current_interrupt + x));
-	t->Sleep(false);
+	if(!(kernel->scheduler->getSchedulerType() == SRTF))
+		t->Sleep(false);
+
+	kernel->interrupt->SetLevel(oldLevel);
 }
 
 bool sleepList::PutToReady()
 {
+	IntStatus oldLevel = kernel->interrupt->SetLevel(IntOff);
+
 	bool woken = false;
 	current_interrupt++;
 	for(std::list<sleepThread>::iterator it = threadlist.begin(); it != threadlist.end(); )
@@ -105,7 +111,7 @@ bool sleepList::PutToReady()
 		if(current_interrupt >= it->when)
 		{
 			woken = true;
-			cout << "sleepList::PutToReady Thread woken" << endl;
+			cout << "PutToReady(): Thread woken" << endl;
 			// put thread into ready queue after process waken
 			kernel->scheduler->ReadyToRun(it->sleeper); 
 			it = threadlist.erase(it);
@@ -115,5 +121,7 @@ bool sleepList::PutToReady()
 			it++;
 		}
 	}
+
+	kernel->interrupt->SetLevel(oldLevel);
 	return woken;
 }

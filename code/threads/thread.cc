@@ -102,7 +102,8 @@ Thread::Fork(VoidFunctionPtr func, void *arg)
     StackAllocate(func, arg);
 
     oldLevel = interrupt->SetLevel(IntOff);
-    scheduler->ReadyToRun(this);	// ReadyToRun assumes that interrupts 
+    if(!(scheduler->getSchedulerType() == SRTF))
+    	scheduler->ReadyToRun(this);	// ReadyToRun assumes that interrupts 
 					// are disabled!
     (void) interrupt->SetLevel(oldLevel);
 }    
@@ -211,9 +212,25 @@ Thread::Yield ()
     DEBUG(dbgThread, "Yielding thread: " << name);
     
     nextThread = kernel->scheduler->FindNextToRun();
-    if (nextThread != NULL) {
-	kernel->scheduler->ReadyToRun(this);
-	kernel->scheduler->Run(nextThread, FALSE);
+    if (nextThread != NULL)
+    {
+	if(kernel->scheduler->getSchedulerType() == SRTF)
+	{
+	  if(nextThread->getBurstTime() < this->getBurstTime() )
+	  {
+	    kernel->scheduler->ReadyToRun(this);
+	    kernel->scheduler->Run(nextThread, FALSE);
+	  }
+	  else
+	  {
+	    kernel->scheduler->ReadyToRun(nextThread);
+	  }
+	}
+	else
+	{
+	  kernel->scheduler->ReadyToRun(this);
+	  kernel->scheduler->Run(nextThread, FALSE);
+	}
     }
     (void) kernel->interrupt->SetLevel(oldLevel);
 }
@@ -413,13 +430,16 @@ static void
 SimpleThread()
 {
     Thread *thread = kernel->currentThread;
-    while (thread->getBurstTime() > 0) {
+    while (thread->getBurstTime() > 0)
+    {
         thread->setBurstTime(thread->getBurstTime() - 1);
-        //kernel->currentThread->Yield();
+        
+	if(kernel->scheduler->getSchedulerType() == SRTF && kernel->alarm->SleepList.PutToReady())
+		thread->Yield();
+
 	kernel->interrupt->OneTick();
-	printf("%s: start %d, remain %d\n", kernel->currentThread->getName(),
-			kernel->currentThread->getStartTime(), kernel->currentThread->getBurstTime());
-    }   
+	printf("%s: remain %d\n", kernel->currentThread->getName(), kernel->currentThread->getBurstTime());
+    }  
 }
 
 //----------------------------------------------------------------------
@@ -432,32 +452,11 @@ Thread::SelfTest()
 {
     DEBUG(dbgThread, "Entering Thread::SelfTest");
     
-    const int number 	 = 4;
-    char *name[number] 	 = {"A", "B", "C", "D"};
-    int start[number]	 = {1, 0, 3, 6};
-    int burst[number] 	 = {3, 9, 7, 3};
-    int priority[number] = {5, 1, 3, 2};
-
-    Thread *t;
-    for (int i = 0; i < number; i ++) {
-        t = new Thread(name[i]);
-        t->setStartTime(start[i]);
-        t->setBurstTime(burst[i]);
-	t->setPriority(priority[i]);
-        t->Fork((VoidFunctionPtr) SimpleThread, (void *)NULL);
-    }
-    kernel->currentThread->Yield();
-}
-/*
-void
-Thread::SelfTest()
-{
-    DEBUG(dbgThread, "Entering Thread::SelfTest");
-    
     const int number 	 = 3;
     char *name[number] 	 = {"A", "B", "C"};
     int burst[number] 	 = {3, 10, 4};
     int priority[number] = {4, 5, 3};
+    int start[number]	 = {3, 0, 4};
 
     Thread *t;
     for (int i = 0; i < number; i ++) {
@@ -465,7 +464,12 @@ Thread::SelfTest()
         t->setPriority(priority[i]);
         t->setBurstTime(burst[i]);
         t->Fork((VoidFunctionPtr) SimpleThread, (void *)NULL);
+
+	if(kernel->scheduler->getSchedulerType() == SRTF)
+	{
+	   kernel->alarm->SleepList.PutToSleep(t, start[i]);
+	}
     }
     kernel->currentThread->Yield();
 }
-*/
+

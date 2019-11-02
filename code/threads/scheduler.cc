@@ -36,12 +36,6 @@ int SJFCompare(Thread *a, Thread *b)
 		return 0;
 	return a->getBurstTime() > b->getBurstTime() ? 1 : -1;
 }
-int SRTFCompare(Thread *a, Thread *b)
-{
-	if(a->getBurstTime() == b->getBurstTime())
-		return 0;
-	return a->getBurstTime() > b->getBurstTime() ? 1 : -1;
-}
 int PriorityCompare(Thread *a, Thread *b) {
     if(a->getPriority() == b->getPriority())
         return 0;
@@ -70,7 +64,7 @@ Scheduler::Scheduler(SchedulerType type)
 		readyList = new SortedList<Thread *>(SJFCompare);
         	break;
 	case SRTF:
-		readyList = new SortedList<Thread *>(SRTFCompare);
+		readyList = new SortedList<Thread *>(SJFCompare);
         	break;
     	case Priority:
 		readyList = new SortedList<Thread *>(PriorityCompare);
@@ -78,7 +72,6 @@ Scheduler::Scheduler(SchedulerType type)
 	case RR:
         	readyList = new List<Thread *>;
         	break;
-    	
    	}
 	toBeDestroyed = NULL;
 } 

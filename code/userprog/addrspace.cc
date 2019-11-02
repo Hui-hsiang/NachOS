@@ -57,9 +57,7 @@ AddrSpace::AddrSpace()
     for (unsigned int i = 0; i < NumPhysPages; i++) {
 	pageTable[i].virtualPage = i;	// for now, virt page # = phys page #
 	pageTable[i].physicalPage = i;
-//	pageTable[i].physicalPage = 0;
 	pageTable[i].valid = TRUE;
-//	pageTable[i].valid = FALSE;
 	pageTable[i].use = FALSE;
 	pageTable[i].dirty = FALSE;
 	pageTable[i].readOnly = FALSE;  
@@ -74,16 +72,14 @@ AddrSpace::AddrSpace()
 // 	Dealloate an address space.
 //----------------------------------------------------------------------
 
-#define PAGE_OCCU true
-#define PAGE_FREE false
-bool AddrSpace::PhyPageStatus[NumPhysPages] = {PAGE_FREE};
+bool AddrSpace::PhyPageStatus[NumPhysPages] = {false};
 int AddrSpace::NumFreePage = NumPhysPages;
 
 AddrSpace::~AddrSpace()
 {
     // release the physical pages occupied by this program
     for(int i=0; i< numPages; i++) {
-	AddrSpace::PhyPageStatus[pageTable[i].physicalPage] = PAGE_FREE;
+	AddrSpace::PhyPageStatus[pageTable[i].physicalPage] = false;
 	AddrSpace::NumFreePage++;
     }
     delete pageTable;
@@ -128,14 +124,18 @@ AddrSpace::Load(char *fileName)
 	// check we're not trying to run anything too big at least until we have virtual memory
     ASSERT(numPages <= NumFreePage);		
 	// implement allocate
-    pageTable = new TranslationEntry[numPages];
+    pageTable = new TranslationEntry[numPages];  // create virtual page
     for(unsigned int i=0, idx=0; i<numPages; i++) {
-	pageTable[i].virtualPage = i;
-	while(idx < NumPhysPages && AddrSpace::PhyPageStatus[idx] == PAGE_OCCU) idx++;
-	AddrSpace::PhyPageStatus[idx] = PAGE_OCCU;
+	// find available alocation
+	while(idx < NumPhysPages && AddrSpace::PhyPageStatus[idx] == true)
+		idx++;
+	AddrSpace::PhyPageStatus[idx] = true;  // use physica page
 	AddrSpace::NumFreePage--;
+
 	// clear the page which will be allocated
 	bzero(&kernel->machine->mainMemory[idx*PageSize], PageSize);
+
+	pageTable[i].virtualPage = i;
 	pageTable[i].physicalPage = idx;
 	pageTable[i].valid = true;
 	pageTable[i].use = false;

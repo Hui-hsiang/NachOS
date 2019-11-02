@@ -46,6 +46,7 @@ ThreadedKernel::ThreadedKernel(int argc, char **argv)
             type = Priority;
         } else if(strcmp(argv[i], "RR") == 0) {
             type = RR;
+	}
     }
 }
 
