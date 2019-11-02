@@ -74,19 +74,6 @@ main(int argc, char **argv)
     
     DEBUG(dbgThread, "Entering main");
 
-// scheduler
-    SchedulerType type = RR;
-    if(strcmp(argv[1], "FCFS") == 0)
-	type = FCFS;
-    else if(strcmp(argv[1], "SJF") == 0)
-	type = SJF;
-    else if(strcmp(argv[1], "SRTF") == 0)
-	type = SRTF;
-    else if(strcmp(argv[1], "PRIORITY") == 0)
-	type = Priority;
-    else if(strcmp(argv[1], "RR") == 0)
-	type = RR;
-
     kernel = new KernelType(argc, argv);
     kernel->Initialize();
     
