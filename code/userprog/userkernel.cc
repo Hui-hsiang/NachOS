@@ -26,9 +26,15 @@ UserProgKernel::UserProgKernel(int argc, char **argv)
         if (strcmp(argv[i], "-s") == 0) {
 	    debugUserProg = TRUE;
 	}
+	else if (strcmp(argv[i], "-FIFO") == 0) {
+		mode = FIFO;
+	}
+	else if (strcmp(argv[i], "-LRU") == 0) {
+		mode = LRU;
+	}
 	else if (strcmp(argv[i], "-e") == 0) {
 		execfile[++execfileNum]= argv[++i];
-	}
+	}	
 	else if (strcmp(argv[i], "-burst") == 0) {
 		burstTime[execfileNum]= atoi(argv[++i]);
 	}
@@ -62,8 +68,9 @@ UserProgKernel::Initialize()
 {
     ThreadedKernel::Initialize();	// init multithreading
 
-    machine = new Machine(debugUserProg);
+    machine = new Machine(debugUserProg, mode);
     fileSystem = new FileSystem();
+    vm_Disk = new SynchDisk("New Disk");
 #ifdef FILESYS
     synchDisk = new SynchDisk("New SynchDisk");
 #endif // FILESYS

@@ -44,7 +44,7 @@ class AddrSpace {
 
     static bool PhyPageStatus[NumPhysPages];
     static int NumFreePage;
-
+	bool pagetable_load;
 };
 
 #endif // ADDRSPACE_H

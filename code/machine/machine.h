@@ -24,13 +24,14 @@
 #include "copyright.h"
 #include "utility.h"
 #include "translate.h"
+#include "vector"
 
 // Definitions related to the size, and format of user memory
 
 const unsigned int PageSize = 128; 		// set the page size equal to
 					// the disk sector size, for simplicity
 
-const unsigned int NumPhysPages = 64;
+const unsigned int NumPhysPages = 32;
 const int MemorySize = (NumPhysPages * PageSize);
 const int TLBSize = 4;			// if there is a TLB, make it small
 
@@ -48,6 +49,11 @@ enum ExceptionType { NoException,           // Everything ok!
 		     IllegalInstrException, // Unimplemented or reserved instr.
 		     
 		     NumExceptionTypes
+};
+
+enum PageReplacementMode {
+	FIFO,
+	LRU
 };
 
 // User program CPU state.  The full set of MIPS registers, plus a few
@@ -87,7 +93,7 @@ class Interrupt;
 
 class Machine {
   public:
-    Machine(bool debug);	// Initialize the simulation of the hardware
+    Machine(bool debug, PageReplacementMode m);	// Initialize the simulation of the hardware
 				// for running user programs
     ~Machine();			// De-allocate the data structures
 
@@ -132,6 +138,15 @@ class Machine {
     TranslationEntry *pageTable;
     unsigned int pageTableSize;
     bool ReadMem(int addr, int size, int* value);
+
+    bool usedPhyPage[NumPhysPages] = {0};	// record which page in the main memory is used
+	bool usedVirPage[NumPhysPages] = {0};
+	int fifo = 0;
+	std::vector<int> LRUstack;
+	PageReplacementMode mode;
+
+	TranslationEntry *main_table[NumPhysPages];
+	
   private:
 
 // Routines internal to the machine simulation -- DO NOT call these directly
